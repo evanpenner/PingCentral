@@ -11,6 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
+@Table(name = "pings")
 public class Ping {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

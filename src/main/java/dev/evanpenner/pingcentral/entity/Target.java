@@ -13,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
+@Table(name = "targets")
 public class Target {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

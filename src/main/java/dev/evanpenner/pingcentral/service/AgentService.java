@@ -5,11 +5,13 @@ import dev.evanpenner.pingcentral.entity.Agent;
 import dev.evanpenner.pingcentral.repository.AgentRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Repository
 public class AgentService {
@@ -31,10 +33,10 @@ public class AgentService {
         Agent agent = new Agent();
         agent.
                 setAgentKey(
-                passwordEncoder.encode(
-                        agentRequest.agentKey()
-                )
-        );
+                        passwordEncoder.encode(
+                                agentRequest.agentKey()
+                        )
+                );
         agent.setVerified(false);
         agent.setLastPollTime(System.currentTimeMillis());
         agent.setName(agentRequest.hostname());
@@ -43,5 +45,34 @@ public class AgentService {
         agent.setVersion(agentRequest.version());
         logger.info("Registering agent: " + agent);
         return agentRepository.save(agent);
+    }
+
+    public Stream<Agent> pageAgents(int page, int pageSize) {
+        return agentRepository.findAll(PageRequest.of(page, pageSize)).stream();
+    }
+
+    public Agent saveAgent(Agent agent) {
+        return agentRepository.save(agent);
+    }
+
+    public Agent verifyAgent(Agent agent) {
+        Optional<Agent> optAgent = agentRepository.findById(agent.getId());
+        if (optAgent.isPresent()) {
+            Agent ag = optAgent.get();
+            ag.setVerified(true);
+            return agentRepository.save(ag);
+        }
+        // agent doesn't exist??
+        return null;
+    }
+    public Agent unverifyAgent(Agent agent) {
+        Optional<Agent> optAgent = agentRepository.findById(agent.getId());
+        if (optAgent.isPresent()) {
+            Agent ag = optAgent.get();
+            ag.setVerified(false);
+            return agentRepository.save(ag);
+        }
+        // agent doesn't exist??
+        return null;
     }
 }
