@@ -85,7 +85,8 @@ public class AgentService {
         Optional<Agent> optAgent = agentRepository.findById(agentId);
         if (optAgent.isPresent()) {
             Agent ag = optAgent.get();
-            return passwordEncoder.matches(agentKey, ag.getAgentKey());
+            if (ag.isVerified())
+                return passwordEncoder.matches(agentKey, ag.getAgentKey());
         }
         return false;
     }

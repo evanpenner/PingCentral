@@ -6,6 +6,9 @@ import dev.evanpenner.pingcentral.entity.Ping;
 import dev.evanpenner.pingcentral.entity.Target;
 import dev.evanpenner.pingcentral.service.AgentService;
 import dev.evanpenner.pingcentral.service.PingService;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,21 +33,23 @@ public class AgentConnector {
     }
 
 
-    @GetMapping("/syncAgent/{agentId}")
+    @PostMapping("/syncAgent/{agentId}")
     public AgentResponse syncAgent(@RequestParam String agentKey, @PathVariable Long agentId, @RequestBody AgentPushUpdateRequest agentPushUpdateRequest) {
         if (!agentService.authenticateAgent(agentKey, agentId)) {
             // TODO: implement logging when authentication fails
+
             return new AgentResponse(List.of());
         }
         List<PingItem> pingItemList = agentPushUpdateRequest.pings();
         for (PingItem pingItem : pingItemList) {
             pingService.savePing(agentId, pingItem.timestamp(), pingItem.targetId(), pingItem.targetHost(), pingItem.latency());
         }
+        System.out.println(agentService.getAgentTargets(agentId).size());
+
         return new AgentResponse(agentService.getAgentTargets(agentId));
     }
 
     public record AgentResponse(List<Target> targets) {
-
     }
 
     public record AgentPushUpdateRequest(List<PingItem> pings) {

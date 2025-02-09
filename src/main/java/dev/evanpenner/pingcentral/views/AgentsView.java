@@ -2,17 +2,26 @@ package dev.evanpenner.pingcentral.views;
 
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
+import com.vaadin.flow.component.grid.contextmenu.GridSubMenu;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import dev.evanpenner.pingcentral.entity.Agent;
+import dev.evanpenner.pingcentral.entity.Target;
 import dev.evanpenner.pingcentral.service.AgentService;
+import dev.evanpenner.pingcentral.service.TargetService;
+
+import java.util.List;
+import java.util.Optional;
 
 @Route("agents")
 public class AgentsView extends VerticalLayout {
     private final AgentService agentService;
+    private final TargetService targetService;
 
-    public AgentsView(AgentService agentService) {
+    public AgentsView(AgentService agentService, TargetService targetService) {
         this.agentService = agentService;
+        this.targetService = targetService;
+
         buildBody();
     }
 
@@ -43,6 +52,23 @@ public class AgentsView extends VerticalLayout {
                 event.getGrid().getLazyDataView().refreshItem(agentService.unverifyAgent(agent));
             }
         });
+
+        var item = gridContextMenu.addItem("Add Target");
+        var subMenu = item.getSubMenu();
+        for (Target target : targetService.queryTargets(0, 100).toList()) {
+            subMenu.addItem(target.getName(), event -> {
+                Optional<Agent> optAgent = event.getItem();
+                if (optAgent.isPresent()) {
+                    Agent agent = optAgent.get();
+                    agent.setVerified(true);
+                    List<Target> agentTargets = agentService.getAgentTargets(agent.getId());
+                    agentTargets.add(target);
+                    agent.setTargets(agentTargets);
+
+                    event.getGrid().getLazyDataView().refreshItem(agentService.saveAgent(agent));
+                }
+            });
+        }
 
         add(agentGrid);
     }

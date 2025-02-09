@@ -23,4 +23,7 @@ public class TargetService {
     public Stream<Target> queryTargets(int page, int pageSize) {
         return targetRepository.findAll(PageRequest.of(page, pageSize)).stream();
     }
+    public void createTarget(Target target) {
+        targetRepository.save(target);
+    }
 }

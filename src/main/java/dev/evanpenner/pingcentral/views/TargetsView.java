@@ -39,8 +39,16 @@ public class TargetsView extends VerticalLayout {
             dialog.add(new VerticalLayout(nameField, hostField, frequencyField));
 
             Button saveButton = new Button("Save", saveBtnEvent -> {
-                
+                Target target = new Target();
+                target.setName(nameField.getValue());
+                target.setHost(hostField.getValue());
+                target.setFrequency(frequencyField.getValue());
+                targetService.createTarget(target);
+                targetGrid.getLazyDataView().refreshAll();
+                dialog.close();
             });
+            dialog.add(saveButton);
+            dialog.open();
         });
 
         add(createTarget, targetGrid);
